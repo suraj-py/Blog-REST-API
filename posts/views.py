@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-# from rest_framework import generics, permissions
+from rest_framework import permissions
 from rest_framework import viewsets
 from .models import Post
 from .permissions import IsAuthorOrReadOnly
@@ -12,9 +12,13 @@ from .serializers import PostSerializer, UserSerializer
 class PostViewSet(viewsets.ModelViewSet):
     # here comma(,) is necessary after IsAuthorOrReadOnly
     # or else you will get BasePermissionMetaclass' object is not iterable error
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (IsAuthorOrReadOnly, permissions.IsAuthenticated,)
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = get_user_model().objects.all()
